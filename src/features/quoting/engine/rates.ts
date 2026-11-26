@@ -1,5 +1,8 @@
 export type PricingMode = 'markup' | 'margin';
 export type BaseplatePricing = 'costWithMinimum' | 'flat';
+/** `direct`: selling to the home owner. `trade`: selling to a kitchen company. */
+export type PriceChannel = 'direct' | 'trade';
+export type TradePricing = 'markup' | 'discount';
 
 /** Every number a quote depends on. Stored per browser, never in source. */
 export interface PricingRates {
@@ -25,6 +28,12 @@ export interface PricingRates {
   readonly baseplateHoursPerCell: number;
 
   readonly setupFeePerDrawer: number;
+
+  /** `markup`: trade price = cost × tradeMarkup. `discount`: direct price less tradeDiscount. */
+  readonly tradePricing: TradePricing;
+  readonly tradeMarkup: number;
+  readonly tradeDiscount: number;
+  readonly tradeSetupFeePerDrawer: number;
   readonly labourPerPlate: number;
 
   readonly deliveryFee: number;
@@ -59,13 +68,17 @@ export const DEFAULT_PRICING_RATES: PricingRates = {
   applyScrapBufferToMachine: true,
   machineCostPerHour: 8.3,
   pricingMode: 'markup',
-  binMarkup: 1.55,
+  binMarkup: 2.6,
   targetMargin: 0.355,
   baseplatePricing: 'costWithMinimum',
   baseplatePrice: 150,
   baseplateGramsPerCell: 4.5,
   baseplateHoursPerCell: 0.08,
   setupFeePerDrawer: 350,
+  tradePricing: 'markup',
+  tradeMarkup: 2,
+  tradeDiscount: 0.25,
+  tradeSetupFeePerDrawer: 350,
   labourPerPlate: 0,
   deliveryFee: 150,
   deliveryCost: 0,
@@ -123,6 +136,15 @@ export function sanitizeRates(input: unknown): PricingRates {
     baseplateGramsPerCell: num('baseplateGramsPerCell', 0, 1000),
     baseplateHoursPerCell: num('baseplateHoursPerCell', 0, 100),
     setupFeePerDrawer: num('setupFeePerDrawer', 0, 1_000_000),
+    tradePricing:
+      src.tradePricing === 'discount'
+        ? 'discount'
+        : src.tradePricing === 'markup'
+          ? 'markup'
+          : d.tradePricing,
+    tradeMarkup: num('tradeMarkup', 1, 100),
+    tradeDiscount: num('tradeDiscount', 0, 0.95),
+    tradeSetupFeePerDrawer: num('tradeSetupFeePerDrawer', 0, 1_000_000),
     labourPerPlate: num('labourPerPlate', 0, 1_000_000),
     deliveryFee: num('deliveryFee', 0, 1_000_000),
     deliveryCost: num('deliveryCost', 0, 1_000_000),

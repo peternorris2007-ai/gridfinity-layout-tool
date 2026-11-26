@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { DEFAULT_PRICING_RATES, sanitizeRates, type PricingRates } from '../engine/rates';
+import {
+  DEFAULT_PRICING_RATES,
+  sanitizeRates,
+  type PriceChannel,
+  type PricingRates,
+} from '../engine/rates';
 
 export const QUOTING_STORAGE_KEY = 'gridfinity-quoting-v1';
 
@@ -13,11 +18,13 @@ export interface SlicerFigures {
 interface QuotingState {
   rates: PricingRates;
   delivery: boolean;
+  channel: PriceChannel;
   /** Keyed by layout name, then by row key (see `useQuoteInput`). */
   slicerOverrides: Partial<Record<string, Record<string, SlicerFigures>>>;
   setRate: <K extends keyof PricingRates>(key: K, value: PricingRates[K]) => void;
   resetRates: () => void;
   setDelivery: (delivery: boolean) => void;
+  setChannel: (channel: PriceChannel) => void;
   setSlicerFigures: (layoutKey: string, rowKey: string, figures: SlicerFigures | null) => void;
 }
 
@@ -55,11 +62,13 @@ export const useQuotingStore = create<QuotingState>()(
     (set) => ({
       rates: DEFAULT_PRICING_RATES,
       delivery: true,
+      channel: 'direct',
       slicerOverrides: {},
       setRate: (key, value) =>
         set((state) => ({ rates: sanitizeRates({ ...state.rates, [key]: value }) })),
       resetRates: () => set({ rates: DEFAULT_PRICING_RATES }),
       setDelivery: (delivery) => set({ delivery }),
+      setChannel: (channel) => set({ channel }),
       setSlicerFigures: (layoutKey, rowKey, figures) =>
         set((state) => {
           const kept = Object.entries(state.slicerOverrides[layoutKey] ?? {}).filter(
@@ -77,6 +86,7 @@ export const useQuotingStore = create<QuotingState>()(
       partialize: (state) => ({
         rates: state.rates,
         delivery: state.delivery,
+        channel: state.channel,
         slicerOverrides: state.slicerOverrides,
       }),
       merge: (persisted, current) => {
@@ -85,6 +95,7 @@ export const useQuotingStore = create<QuotingState>()(
           ...current,
           rates: sanitizeRates(p.rates),
           delivery: typeof p.delivery === 'boolean' ? p.delivery : current.delivery,
+          channel: p.channel === 'trade' ? 'trade' : 'direct',
           slicerOverrides: sanitizeOverrides(p.slicerOverrides),
         };
       },

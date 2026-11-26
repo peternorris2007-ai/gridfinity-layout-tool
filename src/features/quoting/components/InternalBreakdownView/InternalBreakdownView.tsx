@@ -3,7 +3,7 @@ import { Button, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { CostedLine, Quote } from '../../engine/pricing';
 import { parseDuration } from '../../engine/pricing';
-import type { PricingRates } from '../../engine/rates';
+import type { PriceChannel, PricingRates } from '../../engine/rates';
 import { formatMoney } from '../../engine/formatQuote';
 import type { SlicerFigures } from '../../store/quotingStore';
 import { BASEPLATE_ROW_KEY, type QuoteInputResult } from '../../utils/quoteInput';
@@ -11,6 +11,9 @@ import { BASEPLATE_ROW_KEY, type QuoteInputResult } from '../../utils/quoteInput
 interface InternalBreakdownViewProps {
   readonly quote: Quote;
   readonly alternateQuote: Quote;
+  /** The same order priced for the other channel. */
+  readonly otherChannelQuote?: Quote;
+  readonly channel?: PriceChannel;
   readonly rates: PricingRates;
   readonly source: QuoteInputResult;
   readonly onSlicerFigures: (rowKey: string, figures: SlicerFigures | null) => void;
@@ -83,6 +86,8 @@ function SlicerEntry({ item, current, onSave }: SlicerEntryProps) {
 export function InternalBreakdownView({
   quote,
   alternateQuote,
+  otherChannelQuote,
+  channel = 'direct',
   rates,
   source,
   onSlicerFigures,
@@ -216,6 +221,18 @@ export function InternalBreakdownView({
         <dd className="text-right tabular-nums">
           {m(collection.total)} · {m(collection.internal.profit)}
         </dd>
+        {otherChannelQuote && (
+          <>
+            <dt>
+              {channel === 'trade'
+                ? t('quoting.internal.directComparison')
+                : t('quoting.internal.tradeComparison')}
+            </dt>
+            <dd className="text-right tabular-nums">
+              {m(otherChannelQuote.total)} · {m(otherChannelQuote.internal.profit)}
+            </dd>
+          </>
+        )}
       </dl>
       {rates.deliveryCost === 0 && (
         <p className="text-content-secondary">{t('quoting.internal.courierZero')}</p>

@@ -1,4 +1,4 @@
-import type { PricingRates } from './rates';
+import type { PriceChannel, PricingRates } from './rates';
 
 /**
  * `estimate`: the layout tool's own model, so calibration applies.
@@ -32,6 +32,8 @@ export interface QuoteInput {
   readonly drawers: number;
   readonly plates: number;
   readonly delivery: boolean;
+  /** Defaults to `direct`. */
+  readonly channel?: PriceChannel;
 }
 
 export interface CostedLine {
@@ -90,8 +92,30 @@ export interface Quote {
 
 const cents = (n: number): number => Math.round(n * 100) / 100;
 
-function applyMargin(cost: number, rates: PricingRates): number {
+function directPrice(cost: number, rates: PricingRates): number {
   return rates.pricingMode === 'margin' ? cost / (1 - rates.targetMargin) : cost * rates.binMarkup;
+}
+
+/** Price for a part costing `cost` to make, in the given channel. */
+export function partPrice(cost: number, rates: PricingRates, channel: PriceChannel): number {
+  if (channel === 'direct') return directPrice(cost, rates);
+  return rates.tradePricing === 'discount'
+    ? directPrice(cost, rates) * (1 - rates.tradeDiscount)
+    : cost * rates.tradeMarkup;
+}
+
+/** Baseplate price: cost-based with a floor, or flat (discounted for trade in discount mode). */
+export function baseplatePrice(cost: number, rates: PricingRates, channel: PriceChannel): number {
+  if (rates.baseplatePricing === 'flat') {
+    return channel === 'trade' && rates.tradePricing === 'discount'
+      ? rates.baseplatePrice * (1 - rates.tradeDiscount)
+      : rates.baseplatePrice;
+  }
+  return Math.max(rates.baseplatePrice, partPrice(cost, rates, channel));
+}
+
+export function setupFeeFor(rates: PricingRates, channel: PriceChannel): number {
+  return channel === 'trade' ? rates.tradeSetupFeePerDrawer : rates.setupFeePerDrawer;
 }
 
 function calibrated(value: number, source: FigureSource, factor: number): number {
@@ -145,6 +169,7 @@ function costLine(
 }
 
 export function buildQuote(input: QuoteInput, rates: PricingRates): Quote {
+  const channel = input.channel ?? 'direct';
   const items = input.items
     .filter((i) => i.quantity > 0)
     .map((i) =>
@@ -157,7 +182,7 @@ export function buildQuote(input: QuoteInput, rates: PricingRates): Quote {
         i.source,
         i.licenceFee ?? 0,
         rates,
-        (c) => applyMargin(c, rates)
+        (c) => partPrice(c, rates, channel)
       )
     );
 
@@ -172,17 +197,14 @@ export function buildQuote(input: QuoteInput, rates: PricingRates): Quote {
         bp.source,
         0,
         rates,
-        (c) =>
-          rates.baseplatePricing === 'flat'
-            ? rates.baseplatePrice
-            : Math.max(rates.baseplatePrice, applyMargin(c, rates))
+        (c) => baseplatePrice(c, rates, channel)
       )
     : null;
 
   const componentsTotal = cents(
     items.reduce((s, l) => s + l.linePrice, 0) + (baseplate?.linePrice ?? 0)
   );
-  const setupFees = cents(rates.setupFeePerDrawer * Math.max(0, input.drawers));
+  const setupFees = cents(setupFeeFor(rates, channel) * Math.max(0, input.drawers));
   const labour = cents(rates.labourPerPlate * Math.max(0, input.plates));
   const deliveryLine = input.delivery ? rates.deliveryFee : 0;
 

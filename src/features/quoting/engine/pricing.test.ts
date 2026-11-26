@@ -7,6 +7,8 @@ import type { QuoteInput } from './pricing';
 const rates = (over: Partial<PricingRates> = {}): PricingRates => ({
   ...DEFAULT_PRICING_RATES,
   setupFeePerDrawer: 200,
+  binMarkup: 1.55,
+  tradeSetupFeePerDrawer: 200,
   ...over,
 });
 
@@ -150,6 +152,34 @@ describe('buildQuote', () => {
   });
 });
 
+describe('trade pricing', () => {
+  it('prices trade at its own markup', () => {
+    const q = buildQuote({ ...oneBin(), channel: 'trade' }, rates({ tradeMarkup: 2 }));
+    expect(q.items[0]?.unitPrice).toBe(108.36);
+  });
+
+  it('prices trade as a discount off direct', () => {
+    const q = buildQuote(
+      { ...oneBin(), channel: 'trade' },
+      rates({ tradePricing: 'discount', tradeDiscount: 0.25 })
+    );
+    expect(q.items[0]?.unitPrice).toBeCloseTo(83.98 * 0.75, 1);
+  });
+
+  it('uses the trade setup fee and keeps the baseplate floor', () => {
+    const q = buildQuote(
+      { ...oneBin({ baseplate: { grams: 100, hours: 1, source: 'slicer' } }), channel: 'trade' },
+      rates({ tradeSetupFeePerDrawer: 120 })
+    );
+    expect(q.setupLine).toBe(120);
+    expect(q.baseplate?.linePrice).toBe(150);
+  });
+
+  it('defaults to direct', () => {
+    expect(buildQuote(oneBin(), rates()).items[0]?.unitPrice).toBe(83.98);
+  });
+});
+
 describe('parseDuration', () => {
   it.each([
     ['2h 30m', 2.5],
@@ -170,7 +200,7 @@ describe('parseDuration', () => {
 describe('sanitizeRates', () => {
   it('falls back to defaults for missing or out-of-range values', () => {
     const r = sanitizeRates({ binMarkup: -1, filamentCostPerKg: 400, pricingMode: 'nope' });
-    expect(r.binMarkup).toBe(1.55);
+    expect(r.binMarkup).toBe(DEFAULT_PRICING_RATES.binMarkup);
     expect(r.filamentCostPerKg).toBe(400);
     expect(r.pricingMode).toBe('markup');
     expect(sanitizeRates(null)).toEqual(DEFAULT_PRICING_RATES);

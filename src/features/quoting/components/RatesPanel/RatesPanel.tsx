@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Button, NumberField, SegmentedControl, Switch } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import type { BaseplatePricing, PricingMode, PricingRates } from '../../engine/rates';
+import type { BaseplatePricing, PricingMode, PricingRates, TradePricing } from '../../engine/rates';
 import { useQuotingStore } from '../../store/quotingStore';
 
 type NumericRate = {
@@ -141,6 +141,35 @@ export function RatesPanel() {
           key: 'baseplateHoursPerCell',
           label: t('quoting.rates.baseplateHours'),
           unit: 'h',
+        })}
+      </Section>
+
+      <Section title={t('quoting.rates.trade')}>
+        <SegmentedControl<TradePricing>
+          aria-label={t('quoting.rates.tradeMode')}
+          size="sm"
+          value={rates.tradePricing}
+          onChange={(v) => setRate('tradePricing', v)}
+          options={[
+            { value: 'markup', label: t('quoting.rates.tradeModeMarkup') },
+            { value: 'discount', label: t('quoting.rates.tradeModeDiscount') },
+          ]}
+        />
+        {rates.tradePricing === 'markup'
+          ? field({ key: 'tradeMarkup', label: t('quoting.rates.tradeMarkup'), unit: '×' })
+          : field({
+              key: 'tradeDiscount',
+              label: t('quoting.rates.tradeDiscount'),
+              unit: '%',
+              percent: true,
+              step: 1,
+              max: 95,
+            })}
+        {field({
+          key: 'tradeSetupFeePerDrawer',
+          label: t('quoting.rates.tradeSetup'),
+          unit: money,
+          step: 1,
         })}
       </Section>
 

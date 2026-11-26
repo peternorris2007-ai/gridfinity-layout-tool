@@ -1,6 +1,6 @@
 import { useTranslation } from '@/i18n';
 import type { Quote } from '../../engine/pricing';
-import type { PricingRates } from '../../engine/rates';
+import type { PriceChannel, PricingRates } from '../../engine/rates';
 import { clientSafe, formatMoney } from '../../engine/formatQuote';
 
 interface ClientQuoteViewProps {
@@ -8,18 +8,27 @@ interface ClientQuoteViewProps {
   readonly rates: PricingRates;
   readonly layoutName: string;
   readonly date: string;
+  readonly channel?: PriceChannel;
 }
 
 const CELL = 'py-[var(--space-xs)] px-[var(--space-sm)] border-b border-stroke-subtle';
 
 /** The client-facing quote: descriptions and prices only, no trade or material names. */
-export function ClientQuoteView({ quote, rates, layoutName, date }: ClientQuoteViewProps) {
+export function ClientQuoteView({
+  quote,
+  rates,
+  layoutName,
+  date,
+  channel = 'direct',
+}: ClientQuoteViewProps) {
   const t = useTranslation();
   const m = (n: number) => formatMoney(n, rates.currencySymbol);
 
   return (
     <article className="text-sm text-content-primary flex flex-col gap-[var(--space-md)]">
-      <h2 className="text-lg font-semibold">{t('quoting.client.heading')}</h2>
+      <h2 className="text-lg font-semibold">
+        {channel === 'trade' ? t('quoting.client.tradeHeading') : t('quoting.client.heading')}
+      </h2>
       <div>
         <p>
           <strong>{t('quoting.client.project')}</strong> {clientSafe(layoutName)}

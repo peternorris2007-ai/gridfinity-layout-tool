@@ -1,11 +1,18 @@
 import type { Quote } from './pricing';
-import type { PricingRates } from './rates';
+import type { PriceChannel, PricingRates } from './rates';
 
 export interface QuoteMeta {
   readonly layoutName: string;
   /** YYYY-MM-DD */
   readonly date: string;
+  /** Defaults to `direct`. */
+  readonly channel?: PriceChannel;
 }
+
+export const QUOTE_HEADINGS: Record<PriceChannel, string> = {
+  direct: 'Quote: Custom Modular Drawer Storage Solution',
+  trade: 'Trade Quote: Custom Modular Drawer Storage Solution',
+};
 
 /** Client-facing wording rules: no trade or material names. */
 export function clientSafe(text: string): string {
@@ -48,7 +55,7 @@ export function clientQuoteMarkdown(q: Quote, rates: PricingRates, meta: QuoteMe
   summary.push(`* **Total Quote:** **${m(q.total)}**`);
 
   return [
-    '# Quote: Custom Modular Drawer Storage Solution',
+    `# ${QUOTE_HEADINGS[meta.channel ?? 'direct']}`,
     '',
     `**Project / Layout:** ${clientSafe(meta.layoutName)}`,
     `**Date:** ${meta.date}`,
@@ -75,7 +82,7 @@ export function internalBreakdownMarkdown(q: Quote, rates: PricingRates, meta: Q
   const i = q.internal;
   const b = q.setupBreakdown;
   const out = [
-    `# Internal Breakdown: ${meta.layoutName}`,
+    `# Internal Breakdown (${meta.channel === 'trade' ? 'trade' : 'direct'}): ${meta.layoutName}`,
     '',
     `**Date:** ${meta.date}`,
     i.usesCalibratedEstimates
