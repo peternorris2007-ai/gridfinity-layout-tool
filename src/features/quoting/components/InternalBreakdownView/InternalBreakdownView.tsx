@@ -96,7 +96,10 @@ export function InternalBreakdownView({
 
   const row = (line: CostedLine, key: string, current: SlicerFigures | null) => (
     <tr key={key}>
-      <td className={CELL}>{line.description}</td>
+      <td className={CELL}>
+        {line.description}
+        {line.detail && <span className="block text-xs text-content-secondary">{line.detail}</span>}
+      </td>
       <td className={NUM}>{line.quantity}</td>
       <td className={NUM}>{(line.grams * line.quantity).toFixed(0)}</td>
       <td className={NUM}>{(line.hours * line.quantity).toFixed(2)}</td>

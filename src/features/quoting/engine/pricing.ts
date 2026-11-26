@@ -7,7 +7,10 @@ import type { PricingRates } from './rates';
 export type FigureSource = 'estimate' | 'slicer' | 'rate';
 
 export interface QuoteItemInput {
+  /** Client-facing. */
   readonly description: string;
+  /** Internal-only extra, e.g. the grid size. */
+  readonly detail?: string;
   readonly quantity: number;
   /** Per unit. */
   readonly grams: number;
@@ -33,6 +36,7 @@ export interface QuoteInput {
 
 export interface CostedLine {
   readonly description: string;
+  readonly detail: string;
   readonly quantity: number;
   readonly source: FigureSource;
   /** Calibrated, per unit, before scrap buffer. */
@@ -109,6 +113,7 @@ export function productionCostFor(
 
 function costLine(
   description: string,
+  detail: string,
   quantity: number,
   rawGrams: number,
   rawHours: number,
@@ -124,6 +129,7 @@ function costLine(
   const linePrice = cents(unitPrice * quantity);
   return {
     description,
+    detail,
     quantity,
     source,
     grams,
@@ -144,6 +150,7 @@ export function buildQuote(input: QuoteInput, rates: PricingRates): Quote {
     .map((i) =>
       costLine(
         i.description,
+        i.detail ?? '',
         i.quantity,
         i.grams,
         i.hours,
@@ -156,10 +163,19 @@ export function buildQuote(input: QuoteInput, rates: PricingRates): Quote {
 
   const bp = input.baseplate;
   const baseplate = bp
-    ? costLine('Custom-Fitted Drawer Baseplate', 1, bp.grams, bp.hours, bp.source, 0, rates, (c) =>
-        rates.baseplatePricing === 'flat'
-          ? rates.baseplatePrice
-          : Math.max(rates.baseplatePrice, applyMargin(c, rates))
+    ? costLine(
+        'Custom-Fitted Drawer Baseplate',
+        '',
+        1,
+        bp.grams,
+        bp.hours,
+        bp.source,
+        0,
+        rates,
+        (c) =>
+          rates.baseplatePricing === 'flat'
+            ? rates.baseplatePrice
+            : Math.max(rates.baseplatePrice, applyMargin(c, rates))
       )
     : null;
 

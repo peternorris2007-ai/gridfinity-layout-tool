@@ -17,6 +17,7 @@ const BED_PACKING_EFFICIENCY = 0.85;
 export interface QuoteRow {
   readonly key: string;
   readonly description: string;
+  readonly detail: string;
   readonly quantity: number;
   /** Tool estimate per unit, before calibration, plate warm-up excluded. */
   readonly estimate: SlicerFigures;
@@ -30,9 +31,20 @@ export interface QuoteInputResult {
   readonly input: QuoteInput;
 }
 
-export function describeBin(width: number, depth: number, height: number, label: string): string {
-  const size = `${width}×${depth}, ${height}u high`;
+/** Client-facing size in millimetres: nominal footprint and body height. */
+export function describeBin(
+  widthMm: number,
+  depthMm: number,
+  heightMm: number,
+  label: string
+): string {
+  const size = `${Math.round(widthMm)} × ${Math.round(depthMm)} mm, ${Math.round(heightMm)} mm high`;
   return label.trim() ? `${label.trim()} (${size})` : `Storage bin ${size}`;
+}
+
+/** Internal-only grid size, e.g. "2×3 grid, 6u". */
+export function gridSize(width: number, depth: number, height: number): string {
+  return `${width}×${depth} grid, ${height}u`;
 }
 
 /**
@@ -93,7 +105,13 @@ export function buildQuoteInput(
       );
       return {
         key,
-        description: describeBin(g.width, g.depth, g.height, g.label),
+        description: describeBin(
+          g.width * layout.gridUnitMm,
+          g.depth * gridUnitMmY,
+          g.height * layout.heightUnitMm,
+          g.label
+        ),
+        detail: gridSize(g.width, g.depth, g.height),
         quantity: g.quantity,
         estimate: {
           grams: est.gramsFilament,
@@ -112,11 +130,18 @@ export function buildQuoteInput(
 
   const items: QuoteItemInput[] = rows.map((r) => {
     if (r.slicer) {
-      return { description: r.description, quantity: r.quantity, ...r.slicer, source: 'slicer' };
+      return {
+        description: r.description,
+        detail: r.detail,
+        quantity: r.quantity,
+        ...r.slicer,
+        source: 'slicer',
+      };
     }
     const share = estimatedHours > 0 ? (r.estimate.hours / estimatedHours) * overheadHours : 0;
     return {
       description: r.description,
+      detail: r.detail,
       quantity: r.quantity,
       grams: r.estimate.grams,
       hours: r.estimate.hours + share,

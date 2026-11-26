@@ -9,7 +9,14 @@ function renderQuote(vatEnabled = false) {
   const quote = buildQuote(
     {
       items: [
-        { description: 'Gridfinity PETG bin', quantity: 2, grams: 100, hours: 2, source: 'slicer' },
+        {
+          description: 'Gridfinity PETG bin',
+          detail: '2×2 grid, 6u',
+          quantity: 2,
+          grams: 100,
+          hours: 2,
+          source: 'slicer',
+        },
       ],
       baseplate: { grams: 100, hours: 2, source: 'slicer' },
       drawers: 1,
@@ -31,7 +38,7 @@ function renderQuote(vatEnabled = false) {
 describe('ClientQuoteView', () => {
   it('shows descriptions and prices without trade or material names', () => {
     const { container } = renderQuote();
-    expect(container.textContent).not.toMatch(/gridfinity|petg/i);
+    expect(container.textContent).not.toMatch(/gridfinity|petg|grid,|\du\b/i);
     expect(screen.getByText('Custom-Fitted Drawer Baseplate')).toBeInTheDocument();
     expect(screen.getByText('R150.00')).toBeInTheDocument();
     expect(screen.getByText('R0.00 (collection)')).toBeInTheDocument();

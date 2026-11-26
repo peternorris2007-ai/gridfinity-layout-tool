@@ -74,7 +74,13 @@ describe('buildQuoteInput', () => {
 
 describe('describeBin', () => {
   it('names labelled and unlabelled bins', () => {
-    expect(describeBin(2, 3, 6, 'Spices')).toBe('Spices (2×3, 6u high)');
-    expect(describeBin(1, 1, 3, ' ')).toBe('Storage bin 1×1, 3u high');
+    expect(describeBin(84, 126, 42, 'Spices')).toBe('Spices (84 × 126 mm, 42 mm high)');
+    expect(describeBin(42, 42, 21, ' ')).toBe('Storage bin 42 × 42 mm, 21 mm high');
+  });
+
+  it('describes placed bins in millimetres for the client and grid units internally', () => {
+    const r = run(layoutWith([{ label: 'Spices' }]));
+    expect(r.rows[0]?.description).toBe('Spices (84 × 84 mm, 42 mm high)');
+    expect(r.rows[0]?.detail).toBe('2×2 grid, 6u');
   });
 });

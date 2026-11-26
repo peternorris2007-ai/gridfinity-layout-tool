@@ -70,7 +70,7 @@ export function internalBreakdownMarkdown(q: Quote, rates: PricingRates, meta: Q
   const lines = q.baseplate ? [...q.items, q.baseplate] : q.items;
   const rows = lines.map(
     (l) =>
-      `| ${cell(l.description)} | ${l.quantity} | ${(l.grams * l.quantity).toFixed(0)} g | ${(l.hours * l.quantity).toFixed(2)} h | ${m(l.materialCost * l.quantity)} | ${m(l.machineCost * l.quantity)} | ${m(l.productionCost * l.quantity)} | ${m(l.linePrice)} | ${m(l.lineProfit)} |`
+      `| ${cell(l.detail ? `${l.description} [${l.detail}]` : l.description)} | ${l.quantity} | ${(l.grams * l.quantity).toFixed(0)} g | ${(l.hours * l.quantity).toFixed(2)} h | ${m(l.materialCost * l.quantity)} | ${m(l.machineCost * l.quantity)} | ${m(l.productionCost * l.quantity)} | ${m(l.linePrice)} | ${m(l.lineProfit)} |`
   );
   const i = q.internal;
   const b = q.setupBreakdown;
