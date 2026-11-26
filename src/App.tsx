@@ -48,6 +48,7 @@ import {
   DesignGalleryModal,
   LabelsDialog,
   LabelsPage,
+  QuoteDialog,
   CommunityPublishDialog,
 } from './App.lazyComponents';
 import { routeTitleKey, useRouteMeta } from '@/shared/hooks/useRouteMeta';
@@ -146,6 +147,7 @@ export default function App() {
 
   const whatsNewOpen = useViewStore((state) => state.whatsNewOpen);
   const labelsOpen = useViewStore((state) => state.labelsOpen);
+  const quoteOpen = useViewStore((state) => state.quoteOpen);
   const contextMenu = useViewStore((state) => state.contextMenu);
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
 
@@ -516,6 +518,11 @@ export default function App() {
             open={labelsOpen}
             onClose={() => useViewStore.getState().setLabelsOpen(false)}
           />
+        </Suspense>
+      )}
+      {quoteOpen && (
+        <Suspense fallback={null}>
+          <QuoteDialog />
         </Suspense>
       )}
       {communityPublishOpen && (

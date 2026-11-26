@@ -48,6 +48,7 @@ interface ViewState {
   whatsNewOpen: boolean;
   layoutExportOpen: boolean;
   labelsOpen: boolean;
+  quoteOpen: boolean;
   showLayoutManager: boolean;
   showBaseplateLibrary: boolean;
 
@@ -89,6 +90,7 @@ interface ViewActions {
   setWhatsNewOpen: (open: boolean) => void;
   setLayoutExportOpen: (open: boolean) => void;
   setLabelsOpen: (open: boolean) => void;
+  setQuoteOpen: (open: boolean) => void;
   setShowLayoutManager: (show: boolean) => void;
   setShowBaseplateLibrary: (show: boolean) => void;
 
@@ -118,6 +120,7 @@ export const INITIAL_VIEW_STATE = {
   whatsNewOpen: false,
   layoutExportOpen: false,
   labelsOpen: false,
+  quoteOpen: false,
   showLayoutManager: false,
   showBaseplateLibrary: false,
   showIsometricPreview: false,
@@ -187,6 +190,7 @@ export const useViewStore = create<ViewStore>((set) => ({
   setWhatsNewOpen: (open) => set({ whatsNewOpen: open }),
   setLayoutExportOpen: (open) => set({ layoutExportOpen: open }),
   setLabelsOpen: (open) => set({ labelsOpen: open }),
+  setQuoteOpen: (open) => set({ quoteOpen: open }),
   setShowLayoutManager: (show) => set({ showLayoutManager: show }),
   setShowBaseplateLibrary: (show) => set({ showBaseplateLibrary: show }),
 
