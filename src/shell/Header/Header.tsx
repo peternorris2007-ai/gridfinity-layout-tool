@@ -154,6 +154,27 @@ export function Header({ saveStatus }: HeaderProps) {
           {!isTablet && <span className="hidden xl:inline">{t('header.print')}</span>}
         </Button>
 
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => useViewStore.getState().setQuoteOpen(true)}
+          className={`px-2 h-8 text-sm gap-1.5 ${activePress} text-content-secondary`}
+          title={t('header.quote')}
+          aria-label={t('header.quote')}
+          leftIcon={
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 7h6m-6 4h6m-6 4h3M7 3h10a2 2 0 012 2v16l-3-2-2 2-2-2-2 2-2-2-3 2V5a2 2 0 012-2z"
+              />
+            </svg>
+          }
+        >
+          {!isTablet && <span className="hidden xl:inline">{t('header.quote')}</span>}
+        </Button>
+
         {/* Export Button — label stays visible at every width because the
             tooltip that would otherwise explain it is suppressed on touch. */}
         <Tooltip content={t('layoutExport.button')}>
