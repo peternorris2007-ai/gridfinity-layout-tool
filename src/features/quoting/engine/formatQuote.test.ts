@@ -46,7 +46,7 @@ describe('clientQuoteMarkdown', () => {
   it('follows the template', () => {
     expect(md).toContain('# Quote: Custom Modular Drawer Storage Solution');
     expect(md).toContain('**Custom-Fitted Drawer Baseplate** | R150.00');
-    expect(md).toContain('**Drawer Measurement, CAD Layout & Setup** | R200.00');
+    expect(md).toContain('**Drawer Measurement, CAD Layout & Setup** | R350.00');
     expect(md).toContain(`**Total Quote:** **${formatMoney(getQuote().total, 'R')}**`);
   });
 });

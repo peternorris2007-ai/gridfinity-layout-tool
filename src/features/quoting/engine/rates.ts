@@ -65,7 +65,7 @@ export const DEFAULT_PRICING_RATES: PricingRates = {
   baseplatePrice: 150,
   baseplateGramsPerCell: 4.5,
   baseplateHoursPerCell: 0.08,
-  setupFeePerDrawer: 200,
+  setupFeePerDrawer: 350,
   labourPerPlate: 0,
   deliveryFee: 150,
   deliveryCost: 0,

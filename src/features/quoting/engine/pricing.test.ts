@@ -3,8 +3,10 @@ import { buildQuote, parseDuration, productionCostFor } from './pricing';
 import { DEFAULT_PRICING_RATES, sanitizeRates, type PricingRates } from './rates';
 import type { QuoteInput } from './pricing';
 
+// Arithmetic tests pin the spec's original R200 setup fee.
 const rates = (over: Partial<PricingRates> = {}): PricingRates => ({
   ...DEFAULT_PRICING_RATES,
+  setupFeePerDrawer: 200,
   ...over,
 });
 
